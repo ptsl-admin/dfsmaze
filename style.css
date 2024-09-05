@@ -1,0 +1,6 @@
+canvas {
+    display: block;   /* Remove extra space below the canvas */
+    width: inherit;     /* inherit for the parent elements */
+    height: auto;     /* Maintain aspect ratio */
+    border: 1px solid black;
+  }
