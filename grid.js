@@ -5,13 +5,20 @@ class Grid {
     COLS = 5;
     WIDTH = 640;
     HEIGHT = 400;
+    stack = [];    
+
+    // maze generation constants
+    MAZE_NOT_GENERATED = 0;
+    MAZE_GENERATING = 1;
+    MAZE_GENERATED = 2;
+    mazeStatus = this.MAZE_NOT_GENERATED; // 0 means maze has not been generated yet, 1 means it is being generated and 2 means has already been generated
 
     // holds the list of cells
     cells = [];
 
-    constructor(rows, cols, width, height) {        
+    constructor(rows, cols, width, height) {
         
-        this.rows = rows || this.ROWS;
+        this.ROWS = rows || this.ROWS;
         this.COLS = cols || this.COLS;
 
         this.WIDTH = width || this.WIDTH;
@@ -43,13 +50,71 @@ class Grid {
     }
 
 
+    /**
+     * this function generates the maze with same DFS iterative algorithm as well as draws each step change on the canvas
+     */
+    updateMazeGenerationIterative() {
+        
+        if (this.mazeStatus == this.MAZE_GENERATED)
+            return;
+
+        if (this.mazeStatus == this.MAZE_NOT_GENERATED){
+
+            // update the mazeStatus
+            this.mazeStatus = this.MAZE_GENERATING;
+            
+            // Step 1: select random initial cell
+            var id = Math.floor(Math.random() * this.cells.length);
+            
+            // and mark it has visited
+            this.cells[id].visited = true; 
+            this.cells[id].current = true; 
+            
+            // push the random cell to the stack
+            this.stack.push(this.cells[id]);
+            
+            console.log("Maze generation started...");
+            return;
+            
+        }        
+
+        
+        if (this.stack.length <= 0) {
+            // update the mazeStatus
+            this.mazeStatus = this.MAZE_GENERATED;
+
+            console.log("Maze generation completed...");
+            return;
+        }                                
+        
+        // get the current cell
+        var current = this.stack.pop();            
+        
+        // get the neighbours
+        var unvisitedNeighbourIDs = current.neighbours();
+        
+        if (unvisitedNeighbourIDs.length > 0) {
+
+            var currCellID = current.getIndex();
+            var randomCellID = unvisitedNeighbourIDs[Math.floor(Math.random()*unvisitedNeighbourIDs.length)];
+            
+            this.stack.push(this.cells[currCellID]);
+
+            // break the walls
+            this.breakWalls(currCellID, randomCellID);
+
+            // mark the choosen (random) cell as visited
+            this.cells[randomCellID].visited = true;
+            this.stack.push(this.cells[randomCellID]);
+        }                            
+                
+    }
+
 
     /**
      * this function generates the maze
     */
-    generateMazeIterative() {   
-        
-        var stack = [];
+    generateMazeIterative() {
 
         // 1 select random initial cell
         var id = Math.floor(Math.random() * this.cells.length);
@@ -58,12 +123,12 @@ class Grid {
         this.cells[id].visited = true;   
         
         // push the random cell to the stack
-        stack.push(this.cells[id]);        
+        this.stack.push(this.cells[id]);        
         
-        while (stack.length > 0) {
+        while (this.stack.length > 0) {
             
             // get the current cell
-            var current = stack.pop();            
+            var current = this.stack.pop();            
             
             // get the neighbours
             var unvisitedNeighbourIDs = current.neighbours();
@@ -73,14 +138,14 @@ class Grid {
                 var currCellID = current.getIndex(current.i, current.j);
                 var randomCellID = unvisitedNeighbourIDs[Math.floor(Math.random()*unvisitedNeighbourIDs.length)];
                 
-                stack.push(this.cells[currCellID]);
+                this.stack.push(this.cells[currCellID]);
 
                 // break the walls
                 this.breakWalls(currCellID, randomCellID);
 
                 // mark the choosen (random) cell as visited
                 this.cells[randomCellID].visited = true;
-                stack.push(this.cells[randomCellID]);
+                this.stack.push(this.cells[randomCellID]);
             }                            
         }
     }
@@ -92,7 +157,7 @@ class Grid {
      */
     breakWalls (cellCurr, cellNext) {
         // remove wall between current cell and random cellID
-        // in order to break the wall we check the difference between current and random cellID
+        // in order to break the wall we check the difference between current and next cellID
         // if distance is +1
         if (cellCurr - cellNext == 1) {
             // break top wall of curr and bottom wall of random
@@ -139,10 +204,10 @@ Cell = function(parent, i,j)  {
 
     // method to get unvisited neighbours
     this.neighbours = function() {
-        var cellUP = this.getIndex(this.i,this.j-1);
-        var cellDOWN = this.getIndex(this.i,this.j+1);
-        var cellLEFT = this.getIndex(this.i-1,this.j);
-        var cellRIGHT = this.getIndex(this.i+1,this.j);
+        var cellUP = this.getIndex(this.i-1,this.j);
+        var cellDOWN = this.getIndex(this.i+1,this.j);
+        var cellLEFT = this.getIndex(this.i,this.j-1);
+        var cellRIGHT = this.getIndex(this.i,this.j+1);
 
         var neigh = [];
         if (cellUP)
@@ -183,8 +248,8 @@ Cell = function(parent, i,j)  {
         if (this.current){            
             context.fillStyle = "purple";
             context.fillRect(
-                (this.j-1)*this.parent.CELL_WIDTH,
-                (this.i-1)*this.parent.CELL_HEIGHT,
+                (this.i-1)*this.parent.CELL_WIDTH,
+                (this.j-1)*this.parent.CELL_HEIGHT,
                 this.parent.CELL_WIDTH ,
                 this.parent.CELL_HEIGHT
             );
