@@ -42,6 +42,49 @@ class Grid {
         });
     }
 
+
+
+    /**
+     * this function generates the maze
+    */
+    generateMazeIterative() {   
+        
+        var stack = [];
+
+        // 1 select random initial cell
+        var id = Math.floor(Math.random() * this.cells.length);
+        
+        // and mark it has visited
+        this.cells[id].visited = true;   
+        
+        // push the random cell to the stack
+        stack.push(this.cells[id]);        
+        
+        while (stack.length > 0) {
+            
+            // get the current cell
+            var current = stack.pop();            
+            
+            // get the neighbours
+            var unvisitedNeighbourIDs = current.neighbours();
+            
+            if (unvisitedNeighbourIDs.length > 0) {
+
+                var currCellID = current.getIndex(current.i, current.j);
+                var randomCellID = unvisitedNeighbourIDs[Math.floor(Math.random()*unvisitedNeighbourIDs.length)];
+                
+                stack.push(this.cells[currCellID]);
+
+                // break the walls
+                this.breakWalls(currCellID, randomCellID);
+
+                // mark the choosen (random) cell as visited
+                this.cells[randomCellID].visited = true;
+                stack.push(this.cells[randomCellID]);
+            }                            
+        }
+    }
+
     /**
      * Breaks the wall between two neighbouring cells
      * @param {*} cellCurr the id of the current cell 
