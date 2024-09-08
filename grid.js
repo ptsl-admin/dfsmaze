@@ -49,6 +49,12 @@ class Grid {
         });
     }
 
+    setCurrentCell(id){
+        for(var i=0; i<this.cells.length; i++){
+            this.cells[i].current = false;
+        }
+        this.cells[id].current = true;
+    }
 
     /**
      * this function generates the maze with same DFS iterative algorithm as well as draws each step change on the canvas
@@ -68,7 +74,7 @@ class Grid {
             
             // and mark it has visited
             this.cells[id].visited = true; 
-            this.cells[id].current = true; 
+            this.setCurrentCell(id); 
             
             // push the random cell to the stack
             this.stack.push(this.cells[id]);
@@ -106,6 +112,9 @@ class Grid {
             // mark the choosen (random) cell as visited
             this.cells[randomCellID].visited = true;
             this.stack.push(this.cells[randomCellID]);
+
+            // set this randomCellID active
+            this.setCurrentCell(randomCellID);
         }                            
                 
     }
