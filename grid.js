@@ -41,6 +41,40 @@ class Grid {
             cell.draw(context);
         });
     }
+
+    /**
+     * Breaks the wall between two neighbouring cells
+     * @param {*} cellCurr the id of the current cell 
+     * @param {*} cellNext id of the neighbouring cell or nextCell 
+     */
+    breakWalls (cellCurr, cellNext) {
+        // remove wall between current cell and random cellID
+        // in order to break the wall we check the difference between current and random cellID
+        // if distance is +1
+        if (cellCurr - cellNext == 1) {
+            // break top wall of curr and bottom wall of random
+            this.cells[cellCurr].walls.top = false;
+            this.cells[cellNext].walls.bottom = false
+        }
+
+        if (cellCurr - cellNext == -1){
+                // break bottom wall of curr and top wall of random
+                this.cells[cellCurr].walls.bottom = false;
+                this.cells[cellNext].walls.top = false                   
+        }
+
+        if (cellCurr - cellNext > 1) {
+            // break left wall of current and right wall of random
+            this.cells[cellCurr].walls.left = false;
+            this.cells[cellNext].walls.right = false                      
+        }
+
+        if (cellCurr - cellNext < -1) {
+            // break right wall of current and left wall of random
+            this.cells[cellCurr].walls.right = false;
+            this.cells[cellNext].walls.left = false                      
+        }        
+    }
 }
 
 /**
